@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Investment Data Uploader</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .upload-container {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: #1a202c;
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    input[type="file"],
+    input[type="date"] {
+      display: block;
+      margin: 12px auto;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 15px;
+      background-color: #f9fafb;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="file"]:focus,
+    input[type="date"]:focus {
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(66,153,225,0.3);
+      outline: none;
+    }
+
+    .action-button {
+      margin-top: 20px;
+      background: linear-gradient(90deg, #3182ce, #63b3ed);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      width: 100%;
+    }
+
+    .action-button:hover {
+      background: linear-gradient(90deg, #2b6cb0, #4299e1);
+      transform: translateY(-1px);
+    }
+
+    .note {
+      font-size: 13px;
+      color: #4a5568;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    #file-list {
+      font-size: 13px;
+      color: #2d3748;
+      margin-top: 8px;
+      text-align: left;
+    }
+
+    /* Graph container is separate and full-width */
+    .graph-container {
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 30px;
+    }
+
+    #investment-graph {
+      width: 100%;
+      height: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-container">
+    <h2>📊 Upload Transaction Data</h2>
+    <form id="excel-upload-form" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".xlsx,.xls,.csv" multiple required />
+      <div id="file-list"></div>
+
+      <input type="date" name="from_date" placeholder="Start Date" />
+      <input type="date" name="to_date" placeholder="End Date" />
+
+      <input type="hidden" name="analysis_type" value="advanced" />
+      <button type="submit" class="action-button">Generate Graph</button>
+      <div class="note">
+        Supports .xlsx, .xls, and .csv files.<br>
+        Multiple files will be merged automatically.<br>
+        Both dates → 30‑day grouping.<br>
+        No dates → monthly grouping.
+      </div>
+    </form>
+  </div>
+
+  <div class="graph-container">
+    <img id="investment-graph" alt="Investment Graph" />
+  </div>
+
+  <script>
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileList = document.getElementById('file-list');
+
+    fileInput.addEventListener('change', () => {
+      fileList.innerHTML = '';
+      if (fileInput.files.length > 0) {
+        const ul = document.createElement('ul');
+        for (let file of fileInput.files) {
+          const li = document.createElement('li');
+          li.textContent = file.name;
+          ul.appendChild(li);
+        }
+        fileList.appendChild(ul);
+      }
+    });
+
+    document.getElementById('excel-upload-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch('/recent-investments', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          alert('Error fetching graph');
+          return;
+        }
+
+        const blob = await response.blob();
+        const imgUrl = URL.createObjectURL(blob);
+
+        const img = document.getElementById('investment-graph');
+        img.src = imgUrl;
+        img.style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while uploading the file(s).');
+      }
+    });
+  </script>
+</body>
+</html>

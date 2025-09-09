@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recent Investments</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff; /* clean white background */
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #2c3e50;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #007bff;
+    }
+
+    .upload-container {
+      background: #ffffff;
+      padding: 35px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      text-align: center;
+      width: 420px;
+      margin-bottom: 30px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .upload-container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 15px auto;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 15px;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+    input[type="file"]:hover {
+      border-color: #007bff;
+    }
+
+    .action-button {
+      margin-top: 20px;
+      background: linear-gradient(90deg, #007bff, #00c6ff);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      width: 100%;
+    }
+
+    .action-button:hover {
+      background: linear-gradient(90deg, #0056b3, #0099cc);
+      transform: translateY(-2px);
+    }
+
+    .note {
+      font-size: 13px;
+      color: #555;
+      margin-top: 10px;
+    }
+
+    #result-container {
+      text-align: center;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    #investment-graph {
+      max-width: 100%;
+      margin-top: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: none;
+    }
+
+    /* Optional: subtle animation for showing the graph */
+    #investment-graph.show {
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>📈 Recent Investments</h1>
+
+  <div class="upload-container">
+    <h2>Upload Excel/CSV File</h2>
+    <form id="upload-form">
+      <input type="file" name="file" accept=".xlsx,.xls,.csv" required />
+      <input type="hidden" name="analysis_type" value="advanced" />
+      <button type="submit" class="action-button">📊 Show Graph</button>
+      <div class="note">Supports .xlsx, .xls, and .csv files</div>
+    </form>
+  </div>
+
+  <div id="result-container">
+    <img id="investment-graph" alt="Monthly Investment Graph" />
+  </div>
+
+  <script>
+    document.getElementById('upload-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch('/recent-investments', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          alert('Error fetching graph');
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!data.chart_base64) {
+          alert('No chart available.');
+          return;
+        }
+
+        const img = document.getElementById('investment-graph');
+        img.src = 'data:image/png;base64,' + data.chart_base64;
+        img.style.display = 'block';
+        img.classList.add('show');
+
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while uploading the file.');
+      }
+    });
+  </script>
+</body>
+</html>

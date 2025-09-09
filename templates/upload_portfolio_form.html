@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Portfolio Upload Portal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #eef2f7, #dce3ee);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #2c3e50;
+    }
+
+    h1 {
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 40px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .form-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    form {
+      flex: 1;
+      background: #fff;
+      padding: 28px 32px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      min-width: 340px;
+      transition: all 0.3s ease;
+    }
+
+    form:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #2b6cb0;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      color: #374151;
+    }
+
+    input[type="file"],
+    input[type="text"],
+    select,
+    button {
+      width: 100%;
+      padding: 11px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      margin-top: 8px;
+      box-sizing: border-box;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="file"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49,130,206,0.3);
+      outline: none;
+    }
+
+    button {
+      margin-top: 20px;
+      font-weight: 600;
+      background: linear-gradient(90deg, #2563eb, #4f9dfc);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #1e40af, #2563eb);
+      transform: translateY(-2px);
+    }
+
+    .cost-note {
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .error {
+      text-align: center;
+      color: #dc2626;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    #loading-msg {
+      display: none;
+      text-align: center;
+      margin-top: 40px;
+      font-weight: bold;
+      font-size: 16px;
+      color: #374151;
+    }
+
+    /* Animated dots */
+    .dots span {
+      animation: blink 1.5s infinite;
+      font-weight: bold;
+    }
+    .dots span:nth-child(2) { animation-delay: 0.3s; }
+    .dots span:nth-child(3) { animation-delay: 0.6s; }
+    @keyframes blink { 0%,100%{opacity:0;} 50%{opacity:1;} }
+
+    /* Toggle Switch */
+    .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute; content: "";
+      height: 20px; width: 20px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #2563eb; }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .slider.round { border-radius: 34px; }
+  </style>
+</head>
+<body>
+  <h1>📈 Mutual Fund Portfolio Extraction</h1>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <div class="form-container">
+    <!-- CAS PDF Upload Form -->
+    <form action="/portfolio-cas-pdf" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+      <h2>🔐 CAS PDF</h2>
+      <label for="file">Select CAS PDF:</label>
+      <input type="file" name="file" accept=".pdf" required>
+
+      <div style="display: flex; align-items: center; gap: 15px; margin-top: 18px;">
+        <label style="margin:0; white-space: nowrap;">Password Protected?</label>
+        <label class="switch">
+          <input type="checkbox" id="is_pwd_protected" name="is_pwd_protected" onchange="togglePasswordField()">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div id="password-field" style="display: none; margin-top: 15px;">
+        <label for="password">Password:</label>
+        <input type="text" name="password" id="password">
+      </div>
+
+      <button type="submit">Upload CAS PDF</button>
+      <div class="cost-note">CAS PDF to table conversion ~ ₹4</div>
+    </form>
+
+    <!-- CSV Upload Form -->
+    <form action="/portfolio-csv" method="post" enctype="multipart/form-data">
+      <h2>📂 Portfolio CSV</h2>
+      <label for="csvfiles">Select CSV Files:</label>
+      <input type="file" id="csvfiles" name="csvfiles" accept=".csv" multiple required>
+
+      <label for="cleaning_required">Cleaning Required?</label>
+      <select name="cleaning_required" id="cleaning_required" required>
+        <option value="yes">Yes</option>
+        <option value="no" selected>No</option>
+      </select>
+
+      <button type="submit">Upload CSV(s)</button>
+      <div class="cost-note">Merges fund-wise data across multiple CSVs</div>
+    </form>
+  </div>
+
+  <div id="loading-msg">
+    ⏳ Extracting your portfolio<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+  </div>
+
+  <script>
+    function showLoading() {
+      document.getElementById("loading-msg").style.display = "block";
+    }
+
+    function togglePasswordField() {
+      const toggle = document.getElementById("is_pwd_protected");
+      const passwordField = document.getElementById("password-field");
+      const passwordInput = document.getElementById("password");
+      if (toggle.checked) {
+        passwordField.style.display = "block";
+        passwordInput.required = true;
+      } else {
+        passwordField.style.display = "none";
+        passwordInput.required = false;
+        passwordInput.value = "";
+      }
+    }
+  </script>
+</body>
+</html>

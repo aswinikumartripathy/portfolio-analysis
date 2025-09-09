@@ -1,0 +1,8 @@
+@echo off
+REM Activate the conda environment
+call C:\Users\91890\anaconda3\Scripts\activate.bat myenv
+REM Change to your project directory
+cd D:\AK\Projects\Portfolio Analysis
+REM Run the FastAPI app
+uvicorn main:app --reload
+pause

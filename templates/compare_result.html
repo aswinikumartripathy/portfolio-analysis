@@ -1,0 +1,24 @@
+<h2>Investment Plan for ₹{{ amount }}</h2>
+
+<ul>
+    {% for fund in funds %}
+        <li>{{ fund }}</li>
+    {% endfor %}
+</ul>
+
+<table border="1">
+    <tr>
+        <th>Metric</th>
+        {% for fund in funds %}
+            <th>{{ fund }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in comparison %}
+        <tr>
+            <td>{{ row.metric }}</td>
+            {% for val in row.values %}
+                <td>{{ val }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>

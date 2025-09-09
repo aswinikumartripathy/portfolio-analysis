@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+
+  <!-- Navbar -->
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-indigo-600">My Investment Dashboard</h1>
+      <nav>
+        <ul class="flex space-x-6 text-gray-600 font-medium">
+          <li><a href="#" class="hover:text-indigo-600 transition">Home</a></li>
+          <li><a href="#" class="hover:text-indigo-600 transition">Portfolio</a></li>
+          <li><a href="#" class="hover:text-indigo-600 transition">Reports</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Section -->
+  <main class="max-w-7xl mx-auto px-6 py-12">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-10">Welcome back 👋</h2>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- Analyse Portfolio -->
+      <a href="upload-portfolio-form" 
+         class="block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition p-8 border border-gray-100 hover:border-indigo-200 group">
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="bg-indigo-100 text-indigo-600 p-6 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 11V3H7v8H3l9 9 9-9h-4z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800">Analyse Portfolio</h3>
+          <p class="text-gray-500 text-sm">Get insights and performance analytics of your investments.</p>
+        </div>
+      </a>
+
+      <!-- Track Recent Investments -->
+      <a href="transactions" 
+         class="block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition p-8 border border-gray-100 hover:border-green-200 group">
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="bg-green-100 text-green-600 p-6 rounded-full group-hover:bg-green-600 group-hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 8-8" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800">Track Investments</h3>
+          <p class="text-gray-500 text-sm">Monitor your latest investments and keep track of all activity.</p>
+        </div>
+      </a>
+
+      <!-- Compare Mutual Funds -->
+      <a href="investment-plan" 
+         class="block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition p-8 border border-gray-100 hover:border-purple-200 group">
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="bg-purple-100 text-purple-600 p-6 rounded-full group-hover:bg-purple-600 group-hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800">Compare Mutual Funds</h3>
+          <p class="text-gray-500 text-sm">Evaluate and compare mutual fund performance side-by-side.</p>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t mt-12">
+    <div class="max-w-7xl mx-auto px-6 py-6 text-center text-gray-500 text-sm">
+      © 2025 Investment Dashboard. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>

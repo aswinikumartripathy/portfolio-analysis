@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sector-wise Mutual Fund Allocation</title>
+<style>
+
+/* ===== Root Variables ===== */
+:root { --primary:#2E3A59;--accent:#7BB6B6;--success:#4CAF50;--danger:#E57373;--bg-card:#FFFFFF;--bg-alt:#FAFAFA;--text-main:#37474F;--text-soft:#555;--shadow:0 2px 6px rgba(0,0,0,0.05); }
+
+/* ===== Dark Theme Variables ===== */
+body.dark { --primary:#B0C7FF;--accent:#5CCCCC;--success:#81C784;--danger:#EF9A9A;--bg-card:#1E1E1E;--bg-alt:#121212;--text-main:#E0E0E0;--text-soft:#BDBDBD;--shadow:0 2px 6px rgba(0,0,0,0.4); }
+
+/* ===== Base Styles ===== */
+body { font-family:'Segoe UI','Roboto',sans-serif; background-color:var(--bg-alt); color:var(--text-main); margin:0; padding:24px 32px; line-height:1.6; transition:background-color 0.3s ease,color 0.3s ease; }
+
+/* ===== Headings ===== */
+h1,h2,h3 { font-weight:500; margin:20px 0 12px; color:var(--primary); }
+h1 { text-align:center; font-size:28px; }
+h2 { font-size:20px; border-left:4px solid var(--accent); padding-left:10px; }
+h3 { font-size:16px; color:var(--text-soft); border-left:3px solid #aaa; padding-left:8px; }
+
+/* ===== KPI Cards ===== */
+.kpi-wrapper { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:32px; }
+.kpi-section { background:var(--bg-card); border-radius:10px; padding:16px; box-shadow:var(--shadow); text-align:center; transition:background 0.3s; }
+.kpi-title { font-size:13px; color:var(--text-soft); }
+.kpi-value.big { font-size:24px; font-weight:600; color:var(--primary); }
+.kpi-value.medium { font-size:20px; font-weight:500; }
+.kpi-value.big-pnl { font-size:24px; font-weight:600; }
+.kpi-value.positive { color:var(--success); }
+.kpi-value.negative { color:var(--danger); }
+.kpi-sub { font-size:13px; color:var(--text-soft); }
+
+/* ===== Return Percentage ===== */
+.return { color: var(--text-main); font-weight: 500; } 
+.return.positive { color: var(--success); } 
+.return.positive::after { content:" ▲"; color: var(--success); font-weight: bold; } 
+.return.negative { color: var(--danger); } 
+.return.negative::after { content:" ▼"; color: var(--danger); font-weight: bold; }
+
+/* ===== Tables ===== */
+table { width:100%; border-collapse:collapse; background:var(--bg-card); border-radius:10px; overflow:hidden; box-shadow:var(--shadow); transition:background 0.3s; }
+th,td { padding:10px 12px; font-size:13px; }
+th { background-color:var(--accent); color:#fff; font-weight:500; text-align:left; }
+td { color:var(--text-main); }
+tbody tr:nth-child(even) td { background-color:rgba(0,0,0,0.02); }
+body.dark tbody tr:nth-child(even) td { background-color:rgba(255,255,255,0.05); }
+
+/* ===== Cap Distribution ===== */
+.cap-wrapper { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:32px; }
+.cap-table,.donut-chart { flex:1; min-width:280px; background:var(--bg-card); padding:16px; border-radius:10px; box-shadow:var(--shadow); transition:background 0.3s; }
+.donut-chart { display:flex; justify-content:center; align-items:center; }
+.donut-chart img { max-width:85%; height:auto; }
+
+/* ===== Chatbot ===== */
+#chatbot-icon { position:fixed; bottom:18px; right:18px; width:50px; height:50px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; cursor:pointer; box-shadow:var(--shadow); }
+#chatbot-window { position:fixed; bottom:80px; right:18px; width:320px; height:420px; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,0.1); display:none; flex-direction:column; font-size:13px; }
+body.dark #chatbot-window { background:rgba(30,30,30,0.95); }
+#chatbot-messages { flex:1; padding:10px; overflow-y:auto; }
+.user-msg,.bot-msg { padding:8px 12px; border-radius:12px; margin-bottom:6px; max-width:78%; }
+.user-msg { background:var(--accent); color:white; align-self:flex-end; }
+.bot-msg { background:#f4f6f8; color:var(--text-main); align-self:flex-start; }
+body.dark .bot-msg { background:#2a2a2a; color:var(--text-main); }
+#chatbot-input { width:74%; padding:8px; border-radius:8px; border:1px solid #ccc; background:var(--bg-card); color:var(--text-main); }
+#chatbot-window button { width:22%; padding:8px; border-radius:8px; border:none; background:var(--accent); color:white; font-weight:500; }
+
+/* ===== Download Button ===== */
+.download-wrapper { text-align:center; margin-top:20px; }
+#download-pdf { background-color:var(--accent); color:white; border:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; box-shadow:var(--shadow); transition:background-color 0.2s ease; }
+#download-pdf:hover { background-color:var(--primary); }
+
+/* ===== Page Breaks ===== */
+table,tr,td,th,div,section { page-break-inside:auto; }
+.no-break { page-break-inside:avoid; }
+
+</style>
+
+</head>
+
+{% macro indian_format(value, decimals=2) -%}
+  {%- set s = ("%.{}f".format(decimals))|format(value) -%}   {# convert to string with decimals #}
+  {%- if "." in s -%}
+    {%- set int_part, dec_part = s.split(".") -%}
+  {%- else -%}
+    {%- set int_part, dec_part = s, "" -%}
+  {%- endif -%}
+
+  {%- set last3 = int_part[-3:] -%}
+  {%- set rest = int_part[:-3] -%}
+  {%- if rest -%}
+    {%- set rest = rest|reverse|batch(2)|map('join')|map('reverse')|list|reverse|join(',') -%}
+    {{ rest }},{{ last3 }}{% if dec_part %}.{{ dec_part }}{% endif %}
+  {%- else -%}
+    {{ last3 }}{% if dec_part %}.{{ dec_part }}{% endif %}
+  {%- endif -%}
+{%- endmacro %}
+
+
+
+
+<body>
+
+<div id="dashboard">
+    <h1>Investment Portfolio</h1>
+    <div class="kpi-wrapper">
+        <div class="kpi-section">
+            <div class="kpi-title">Current Portfolio Value</div>
+            <div class="kpi-value big">₹{{ indian_format(total_market|round|int) }}</div>
+            <div class="kpi-sub">Invested Amount: ₹{{ indian_format(total_cost|round|int) }}</div>
+
+        </div>
+        <div class="kpi-section">
+            <div class="kpi-title">Total P&amp;L</div>
+            <div class="kpi-value big-pnl {{ pnl_class }}">₹{{ indian_format(total_pnl|round|int) }}</div>
+            <div class="kpi-sub">
+                Return:
+                <span class="return {{ 'positive' if total_return_pct >= 0 else 'negative' }}">
+                    {{ "%.2f"|format(total_return_pct) }}%
+                </span>
+            </div>
+        </div>
+
+        <div class="kpi-section">
+            <div class="kpi-title">Funds Invested</div>
+            <div class="kpi-value medium">{{ (total_funds) }}</div>
+        </div>
+
+    </div>
+
+    <h2>Cap Distribution</h2>
+    <div class="cap-wrapper">
+        <div class="cap-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sector</th>
+                        <th>Market Value (₹)</th>
+                        <th>Expected Distribution (%)</th>
+                        <th>Actual Distribution (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set total_market_value = 0 %}
+                    {% for row in overall_totals %}
+                        {% set total_market_value = total_market_value + row['Market Value'] %}
+                    {% endfor %}
+
+                    {% for row in overall_totals %}
+                        {% set actual_pct = (row['Market Value'] / total_market) * 100 %}
+                        {% set expected_pct = expected_distribution.get(row['Sector'], '-') %}
+                        <tr>
+                            <td>{{ row['Sector'] }}</td>
+                            <td>₹{{ indian_format(row['Market Value'], 2) }}</td>
+                            <td>
+                                {% if expected_pct != '-' %}
+                                    {{ expected_pct }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ indian_format(actual_pct, 2) }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="donut-chart">
+            <img src="data:image/png;base64,{{ chart_base64 }}" alt="Portfolio Donut Chart">
+        </div>
+    </div>
+
+    <section>
+    <h2>📊 Fund Distribution by Cap</h2>
+
+    {% for cap, funds in cap_wise_funds.items() %}
+        <div class="cap-section">
+            <h3>{{ cap }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scheme Name</th>
+                        <th>Cost Value (₹)</th>
+                        <th>Market Value (₹)</th>
+                        <th>Return (%)</th>
+                        <th>Distribution (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set ns = namespace(total_cost=0, total_market=0) %}
+                    {% for fund in funds %}
+                        {% set ns.total_cost = ns.total_cost + fund['Cost Value'] %}
+                        {% set ns.total_market = ns.total_market + fund['Market Value'] %}
+                        <tr>
+                            <td>{{ fund['Scheme Name'] }}</td>
+                            <td>₹{{ indian_format(fund['Cost Value'], 2) }}</td>
+                            <td>₹{{ indian_format(fund['Market Value'], 2) }}</td>
+                            <td>{{ "%.2f"|format(fund['Return %']) }}%</td>
+                            <td>{{ "%.2f"|format(fund['Distribution %']) }}%</td>
+                        </tr>
+                    {% endfor %}
+
+                    {% set total_return = ((ns.total_market - ns.total_cost) / ns.total_cost * 100) if ns.total_cost > 0 else 0 %}
+                    <tr class="totals">
+                        <td><b>Total</b></td>
+                        <td><b>₹{{ indian_format(ns.total_cost, 2) }}</b></td>
+                        <td><b>₹{{ indian_format(ns.total_market, 2) }}</b></td>
+                        <td><b>{{ "%.2f"|format(total_return) }}%</b></td>
+                        <td><b></b></td>   {# blank distribution #}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+
+
+    </section>
+
+
+    <h2>AMC-wise Distribution</h2>
+    <div class="container">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>AMC</th>
+                        <th>Invested Amount (₹)</th>
+                        <th>Market Value (₹)</th>
+                        <th>Return (%)</th>
+                        <th>Distribution (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in amc_totals %}
+                    <tr>
+                        <td>{{ row['AMC'] }}</td>
+                        <td>₹{{ indian_format(row['Cost Value'], 2) }}</td>
+                        <td>₹{{ indian_format(row['Market Value'], 2) }}</td>
+                        <td>{{ "%.2f"|format(row['Return %']) }}%</td>
+                        <td>{{ "%.2f"|format(row['Distribution %']) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% if stacked_chart_base64 %}
+    <h2>📈 Month-wise Investment Chart</h2>
+    <img src="data:image/png;base64,{{ stacked_chart_base64 }}" alt="Monthly Investment Chart">
+{% endif %}
+
+</div>
+<div class="download-wrapper">
+    <button id="download-pdf" onclick="downloadPDF()">
+        Download PDF
+    </button>
+</div>
+
+
+<!-- Chatbot -->
+<div id="chatbot-icon" onclick="toggleChatbot()">
+    💬
+</div>
+<div id="chatbot-window">
+    <div style="background: linear-gradient(135deg, #1f78b4, #3ba1e3); color: white; padding: 14px; font-weight: bold; display: flex; justify-content: space-between;">
+        <span>Portfolio Chatbot</span>
+        <button onclick="toggleChatbot()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">×</button>
+    </div>
+    <div id="chatbot-messages"></div>
+    <div style="padding: 8px; border-top: 1px solid #ddd;">
+        <input id="chatbot-input" type="text" placeholder="Type your message..." style="width:75%; padding: 10px;">
+        <button onclick="sendMessage()" style="width:20%;">Send</button>
+    </div>
+</div>
+
+<!-- Add this to your page -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+    const element = document.getElementById('dashboard');
+
+    const opt = {
+        margin:       0.3,
+        filename:     'investment_portfolio_' + new Date().toISOString().split('T')[0] + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Ensures long content flows to new pages
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+</script>
+
+
+<script>
+
+
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'd') document.body.classList.toggle('dark');
+});
+
+
+function toggleChatbot() {
+    const win = document.getElementById('chatbot-window');
+    win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+}
+function addMessage(sender, text) {
+    const chatBox = document.getElementById('chatbot-messages');
+    const messageElem = document.createElement('div');
+    messageElem.className = sender === 'You' ? 'user-msg' : 'bot-msg';
+    messageElem.innerHTML = text;
+    chatBox.appendChild(messageElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatbot-input');
+    const chatBox = document.getElementById('chatbot-messages');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    // Read GPT toggle status from header toggle
+    const useGPT = document.getElementById('gpt-toggle').checked;
+
+    addMessage('You', msg);
+    input.value = '';
+    input.disabled = true;
+
+    // Show bot typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'bot-msg typing-fade';
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.textContent = 'Bot is typing...';
+    chatBox.appendChild(typingIndicator);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: msg, use_gpt: useGPT})
+        });
+        const data = await response.json();
+
+        // Remove typing indicator
+        typingIndicator.remove();
+
+        addMessage('Bot', data.response);
+    } catch {
+        typingIndicator.remove();
+        addMessage('Bot', '⚠ Unable to connect to the server.');
+    } finally {
+        input.disabled = false;
+        input.focus();
+    }
+}
+</script>

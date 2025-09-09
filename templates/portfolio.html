@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mutual Fund Portfolio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #f4f6fa;
+            margin: 0;
+            padding: 40px;
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4em;
+            margin-bottom: 25px;
+            color: #1a2b4c;
+            letter-spacing: -0.5px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 35px;
+        }
+
+        .action-button {
+            padding: 12px 26px;
+            font-size: 15px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            background: linear-gradient(135deg, #2980b9, #1f6391);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        th, td {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9fbfd;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f6fc;
+            transition: background-color 0.25s ease;
+        }
+
+        p {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.05em;
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Mutual Fund Portfolio</h1>
+
+    <div class="button-row">
+        <a href="/download-csv" class="action-button">⬇️ Download CSV</a>
+        <a href="/portfolio-analysis" target="_blank" class="action-button">💬 Analyse Portfolio</a>
+        <a href="/investment-plan" class="action-button">💰 Want to Invest</a>
+    </div>
+
+    {% if portfolio.shape[0] > 0 %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in portfolio.columns %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in portfolio.values %}
+                        <tr>
+                            {% for cell in row %}
+                                <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No data found.</p>
+    {% endif %}
+</body>
+</html>
